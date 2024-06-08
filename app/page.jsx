@@ -2,19 +2,20 @@
 "use client";
 
 import * as Yup from "yup";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useFormik } from "formik";
+import { useQuery } from "@tanstack/react-query";
+import { useReactToPrint } from "react-to-print";
+
 import Container from "@/components/shared/Container";
 import { Button } from "@/components/ui/button";
 import ReservationCard from "./_components/ReservationCard";
 import CustomerCard from "./_components/CustomerCard";
 import ChargeCard from "./_components/ChargeCard";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useFormik } from "formik";
-import { useQuery } from "@tanstack/react-query";
-import ApiKit from "@/common/ApiKit";
 import Loading from "@/components/shared/Loading";
 import { formatDuration } from "@/lib/utils";
 import { PrintPage } from "./_components/PrintPage";
-import { useReactToPrint } from "react-to-print";
+import ApiKit from "@/common/ApiKit";
 
 const validationSchema = Yup.object().shape({
   pickupDate: Yup.date().required("Pickup date is required"),
@@ -37,11 +38,27 @@ const validationSchema = Yup.object().shape({
     .required("Vehicle is required"),
 });
 
+const initialFormValues = {
+  reservationId: "",
+  pickupDate: "",
+  returnDate: "",
+  duration: "",
+  discount: "",
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  vehicleType: null,
+  vehicle: null,
+  hasDamage: false,
+  hasInsurance: false,
+  hasTax: false,
+};
+
 export default function Home() {
   const [selectedCar, setSelectedCar] = useState(null);
   const [duration, setDuration] = useState(null);
   const [selectedReceipt, setSelectedReceipt] = useState({});
-
   const cashReceiptRef = useRef();
 
   const handlePrintCashReceipt = useReactToPrint({
@@ -50,22 +67,7 @@ export default function Home() {
   });
 
   const formik = useFormik({
-    initialValues: {
-      reservationId: "",
-      pickupDate: "",
-      returnDate: "",
-      duration: "",
-      discount: "",
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      vehicleType: null,
-      vehicle: null,
-      hasDamage: false,
-      hasInsurance: false,
-      hasTax: false,
-    },
+    initialValues: initialFormValues,
     validationSchema,
     onSubmit: (values) => {
       const payload = {
@@ -85,8 +87,6 @@ export default function Home() {
       ApiKit.postInvoice(payload)
         .then(({ data }) => {
           setSelectedReceipt(data);
-        })
-        .then(() => {
           handlePrintCashReceipt();
         })
         .catch((error) => {
@@ -104,19 +104,26 @@ export default function Home() {
     }
   }, [formik.values.pickupDate, formik.values.returnDate]);
 
-  useMemo(() => {
-    let id = Math.floor(Math.random() * 10000);
+  useEffect(() => {
+    const id = Math.floor(Math.random() * 10000);
     formik.setFieldValue(
       "reservationId",
       `RA #${id.toString().padStart(4, "0")}`
     );
-    return `RA #${id.toString().padStart(4, "0")}`;
   }, []);
 
   const { data, isLoading } = useQuery({
     queryKey: ["cars"],
     queryFn: () => ApiKit.getCars().then(({ data }) => data?.data),
   });
+
+  const handleSubmit = useCallback(
+    (e) => {
+      e.preventDefault();
+      formik.handleSubmit();
+    },
+    [formik]
+  );
 
   if (isLoading) {
     return (
@@ -135,12 +142,10 @@ export default function Home() {
 
   const vehicleOptions = data
     ?.filter((car) => car.type === formik.values.vehicleType?.value)
-    .map((car) => {
-      return {
-        label: car.model,
-        value: car.model,
-      };
-    });
+    .map((car) => ({
+      label: car.model,
+      value: car.model,
+    }));
 
   return (
     <main>
@@ -148,13 +153,7 @@ export default function Home() {
         <form>
           <div className="flex items-center justify-between mb-10">
             <h3 className="font-bold text-2xl">Reservation</h3>
-            <Button
-              type="submit"
-              onClick={(e) => {
-                e.preventDefault();
-                formik.handleSubmit();
-              }}
-            >
+            <Button type="submit" onClick={handleSubmit}>
               Print / Download
             </Button>
           </div>
