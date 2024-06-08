@@ -8,6 +8,44 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatDuration } from "@/lib/utils";
 
+const FormField = ({
+  label,
+  name,
+  formik,
+  type = "text",
+  disabled = false,
+}) => (
+  <div>
+    <Label>
+      {label}
+      {name !== "duration" && <span className="text-destructive">*</span>}
+    </Label>
+    <Input
+      type={type}
+      name={name}
+      value={formik.values[name]}
+      onChange={formik.handleChange}
+      onBlur={formik.handleBlur}
+      disabled={disabled}
+    />
+    {name !== "duration" && <FormikErrorBox formik={formik} field={name} />}
+  </div>
+);
+
+const DateField = ({ label, name, formik, onDateChange }) => (
+  <div>
+    <Label className="block">
+      {label}
+      <span className="text-destructive">*</span>
+    </Label>
+    <DateTimePicker
+      selectedDate={formik.values[name]}
+      onDateChange={onDateChange}
+    />
+    <FormikErrorBox formik={formik} field={name} />
+  </div>
+);
+
 export default function ReservationCard({
   formik,
   vehicleTypeOptions,
@@ -15,6 +53,8 @@ export default function ReservationCard({
   data,
   setSelectedCar,
 }) {
+  const { values, setFieldValue } = formik;
+
   return (
     <div className="space-y-6">
       <div>
@@ -23,57 +63,49 @@ export default function ReservationCard({
         </div>
 
         <Card className="space-y-2">
-          <div>
-            <Label>Reservation ID</Label>
-            <Input disabled value={formik.values.reservationId} />
-          </div>
-          <div>
-            <Label className="block">
-              Pickup Date<span className="text-destructive">*</span>{" "}
-            </Label>
-            <DateTimePicker
-              selectedDate={formik.values.pickupDate}
-              onDateChange={(date) => {
-                formik.setFieldValue("pickupDate", date),
-                  formik.values.returnDate &&
-                    formik.setFieldValue(
-                      "duration",
-                      formatDuration(date, formik.values.returnDate)?.formatted
-                    );
-              }}
-            />
-            <FormikErrorBox formik={formik} field="pickupDate" />
-          </div>
-          <div>
-            <Label className="block">
-              Return Date<span className="text-destructive">*</span>
-            </Label>
-            <DateTimePicker
-              selectedDate={formik.values.returnDate}
-              onDateChange={(date) => {
-                formik.setFieldValue("returnDate", date),
-                  formik.values.pickupDate &&
-                    formik.setFieldValue(
-                      "duration",
-                      formatDuration(formik.values.pickupDate, date)?.formatted
-                    );
-              }}
-            />
-            <FormikErrorBox formik={formik} field="returnDate" />
-          </div>
+          <FormField
+            label="Reservation ID"
+            name="reservationId"
+            formik={formik}
+            disabled
+          />
+
+          <DateField
+            label="Pickup Date"
+            name="pickupDate"
+            formik={formik}
+            onDateChange={(date) => {
+              setFieldValue("pickupDate", date);
+              if (values.returnDate) {
+                setFieldValue(
+                  "duration",
+                  formatDuration(date, values.returnDate)?.formatted
+                );
+              }
+            }}
+          />
+
+          <DateField
+            label="Return Date"
+            name="returnDate"
+            formik={formik}
+            onDateChange={(date) => {
+              setFieldValue("returnDate", date);
+              if (values.pickupDate) {
+                setFieldValue(
+                  "duration",
+                  formatDuration(values.pickupDate, date)?.formatted
+                );
+              }
+            }}
+          />
+
           <div className="flex items-center gap-10 !mt-5">
             <Label>Duration</Label>
-            <Input disabled value={formik.values.duration} />
+            <Input disabled value={values.duration} />
           </div>
-          <div>
-            <Label>Discount (%)</Label>
-            <Input
-              name="discount"
-              value={formik.values.discount}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-            />
-          </div>
+
+          <FormField label="Discount (%)" name="discount" formik={formik} />
         </Card>
       </div>
 
@@ -91,26 +123,27 @@ export default function ReservationCard({
               options={vehicleTypeOptions}
               onChange={(value) => {
                 setSelectedCar(null);
-                formik.setFieldValue("vehicle", null);
-                formik.setFieldValue("vehicleType", value);
+                setFieldValue("vehicle", null);
+                setFieldValue("vehicleType", value);
               }}
-              value={formik.values.vehicleType}
+              value={values.vehicleType}
               placeholder="Select Vehicle Type"
             />
             <FormikErrorBox formik={formik} field="vehicleType" />
           </div>
+
           <div>
             <Label>
               Vehicle<span className="text-destructive">*</span>
             </Label>
             <SelectField
-              isDisabled={!formik.values.vehicleType}
+              isDisabled={!values.vehicleType}
               options={vehicleOptions}
               onChange={(value) => {
-                formik.setFieldValue("vehicle", value);
+                setFieldValue("vehicle", value);
                 setSelectedCar(data?.find((car) => car.model === value.value));
               }}
-              value={formik.values.vehicle}
+              value={values.vehicle}
               placeholder="Select Vehicle"
             />
             <FormikErrorBox formik={formik} field="vehicle" />
