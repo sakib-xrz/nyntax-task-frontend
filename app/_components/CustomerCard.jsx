@@ -6,6 +6,40 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+const FormField = ({ label, name, formik, type = "text" }) => (
+  <div>
+    <Label>
+      {label}
+      <span className="text-destructive">*</span>
+    </Label>
+    <Input
+      type={type}
+      value={formik.values[name]}
+      onChange={formik.handleChange}
+      onBlur={formik.handleBlur}
+      name={name}
+    />
+    <FormikErrorBox formik={formik} field={name} />
+  </div>
+);
+
+const CheckboxField = ({ label, name, formik, price }) => (
+  <div className="flex items-center space-x-2">
+    <Checkbox
+      id={name}
+      checked={formik.values[name]}
+      onCheckedChange={() => formik.setFieldValue(name, !formik.values[name])}
+    />
+    <Label
+      htmlFor={name}
+      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex justify-between w-full cursor-pointer"
+    >
+      {label}
+      <p>{price}</p>
+    </Label>
+  </div>
+);
+
 export default function CustomerCard({ formik }) {
   return (
     <div className="space-y-6">
@@ -15,55 +49,10 @@ export default function CustomerCard({ formik }) {
         </div>
 
         <Card className="space-y-2">
-          <div>
-            <Label>
-              First Name<span className="text-destructive">*</span>{" "}
-            </Label>
-            <Input
-              value={formik.values.firstName}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              name="firstName"
-            />
-            <FormikErrorBox formik={formik} field="firstName" />
-          </div>
-          <div>
-            <Label>
-              Last Name<span className="text-destructive">*</span>{" "}
-            </Label>
-            <Input
-              value={formik.values.lastName}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              name="lastName"
-            />
-            <FormikErrorBox formik={formik} field="lastName" />
-          </div>
-          <div>
-            <Label>
-              Email<span className="text-destructive">*</span>{" "}
-            </Label>
-            <Input
-              value={formik.values.email}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              name="email"
-            />
-            <FormikErrorBox formik={formik} field="email" />
-          </div>
-          <div>
-            <Label>
-              Phone<span className="text-destructive">*</span>{" "}
-            </Label>
-            <Input
-              type="tel"
-              value={formik.values.phone}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              name="phone"
-            />
-            <FormikErrorBox formik={formik} field="phone" />
-          </div>
+          <FormField label="First Name" name="firstName" formik={formik} />
+          <FormField label="Last Name" name="lastName" formik={formik} />
+          <FormField label="Email" name="email" formik={formik} />
+          <FormField label="Phone" name="phone" formik={formik} type="tel" />
         </Card>
       </div>
 
@@ -73,57 +62,24 @@ export default function CustomerCard({ formik }) {
         </div>
 
         <Card className="space-y-8">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="hasDamage"
-              checked={formik.values.hasDamage}
-              onCheckedChange={() =>
-                formik.setFieldValue("hasDamage", !formik.values.hasDamage)
-              }
-            />
-            <Label
-              htmlFor="hasDamage"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex justify-between w-full cursor-pointer"
-            >
-              Collision Damage Waiver
-              <p>$9.00</p>
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="hasInsurance"
-              checked={formik.values.hasInsurance}
-              onCheckedChange={() =>
-                formik.setFieldValue(
-                  "hasInsurance",
-                  !formik.values.hasInsurance
-                )
-              }
-            />
-            <Label
-              htmlFor="hasInsurance"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex justify-between w-full cursor-pointer"
-            >
-              Liability Insurance
-              <p>$15.00</p>
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="hasTax"
-              checked={formik.values.hasTax}
-              onCheckedChange={() =>
-                formik.setFieldValue("hasTax", !formik.values.hasTax)
-              }
-            />
-            <Label
-              htmlFor="hasTax"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex justify-between w-full cursor-pointer"
-            >
-              Rental Tax
-              <p>$11.5</p>
-            </Label>
-          </div>
+          <CheckboxField
+            label="Collision Damage Waiver"
+            name="hasDamage"
+            formik={formik}
+            price="$9.00"
+          />
+          <CheckboxField
+            label="Liability Insurance"
+            name="hasInsurance"
+            formik={formik}
+            price="$15.00"
+          />
+          <CheckboxField
+            label="Rental Tax"
+            name="hasTax"
+            formik={formik}
+            price="$11.50"
+          />
         </Card>
       </div>
     </div>
