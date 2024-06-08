@@ -18,7 +18,9 @@ const FormField = ({
   <div>
     <Label>
       {label}
-      {name !== "duration" && <span className="text-destructive">*</span>}
+      {name !== "duration" &&
+        name !== "reservationId" &&
+        name !== "discount" && <span className="text-destructive">*</span>}
     </Label>
     <Input
       type={type}
@@ -28,7 +30,9 @@ const FormField = ({
       onBlur={formik.handleBlur}
       disabled={disabled}
     />
-    {name !== "duration" && <FormikErrorBox formik={formik} field={name} />}
+    {name !== "duration" && name !== "reservationId" && name !== "discount" && (
+      <FormikErrorBox formik={formik} field={name} />
+    )}
   </div>
 );
 
