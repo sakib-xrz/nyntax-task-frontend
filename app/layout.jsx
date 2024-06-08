@@ -9,6 +9,11 @@ const fontSans = FontSans({
   variable: "--font-sans",
 });
 
+export const metadata = {
+  title: "Nyntax Task",
+  description: "Powered by Next Js",
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
