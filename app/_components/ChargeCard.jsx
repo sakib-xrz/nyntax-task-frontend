@@ -3,11 +3,25 @@
 import { Card } from "@/components/ui/card";
 
 export default function ChargeCard({ duration, formik, selectedCar }) {
-  const totalCharges = selectedCar
-    ? selectedCar.rates.weekly * duration.weeks +
-      selectedCar.rates.daily * duration.days +
-      selectedCar.rates.hourly * duration.hours
-    : 0;
+  const calculateTotalCharges = () => {
+    if (!selectedCar) return 0;
+
+    const weeklyCharges = selectedCar.rates.weekly * duration.weeks;
+    const dailyCharges = selectedCar.rates.daily * duration.days;
+    const hourlyCharges = selectedCar.rates.hourly * duration.hours;
+    const baseCharges = weeklyCharges + dailyCharges + hourlyCharges;
+
+    const damageCharge = formik.values.hasDamage ? 9 : 0;
+    const insuranceCharge = formik.values.hasInsurance ? 15 : 0;
+    const taxCharge = formik.values.hasTax ? 11.5 : 0;
+    const discount = formik.values.discount
+      ? (baseCharges * formik.values.discount) / 100
+      : 0;
+
+    return baseCharges + damageCharge + insuranceCharge + taxCharge - discount;
+  };
+
+  const totalCharges = calculateTotalCharges();
 
   return (
     <div className="space-y-6">
@@ -36,13 +50,10 @@ export default function ChargeCard({ duration, formik, selectedCar }) {
                     <td className="py-2">Weekly</td>
                     <td className="py-2">{duration.weeks}</td>
                     <td className="py-2">
-                      ${parseFloat(selectedCar.rates.weekly).toFixed(2)}
+                      ${selectedCar.rates.weekly.toFixed(2)}
                     </td>
                     <td className="py-2 text-right">
-                      $
-                      {parseFloat(
-                        selectedCar.rates.weekly * duration.weeks
-                      ).toFixed(2)}
+                      ${(selectedCar.rates.weekly * duration.weeks).toFixed(2)}
                     </td>
                   </tr>
                 )}
@@ -52,13 +63,10 @@ export default function ChargeCard({ duration, formik, selectedCar }) {
                     <td className="py-2">Daily</td>
                     <td className="py-2">{duration.days}</td>
                     <td className="py-2">
-                      ${parseFloat(selectedCar.rates.daily).toFixed(2)}
+                      ${selectedCar.rates.daily.toFixed(2)}
                     </td>
                     <td className="py-2 text-right">
-                      $
-                      {parseFloat(
-                        selectedCar.rates.daily * duration.days
-                      ).toFixed(2)}
+                      ${(selectedCar.rates.daily * duration.days).toFixed(2)}
                     </td>
                   </tr>
                 )}
@@ -68,13 +76,10 @@ export default function ChargeCard({ duration, formik, selectedCar }) {
                     <td className="py-2">Hourly</td>
                     <td className="py-2">{duration.hours}</td>
                     <td className="py-2">
-                      ${parseFloat(selectedCar.rates.hourly).toFixed(2)}
+                      ${selectedCar.rates.hourly.toFixed(2)}
                     </td>
                     <td className="py-2 text-right">
-                      $
-                      {parseFloat(
-                        selectedCar.rates.hourly * duration.hours
-                      ).toFixed(2)}
+                      ${(selectedCar.rates.hourly * duration.hours).toFixed(2)}
                     </td>
                   </tr>
                 )}
@@ -110,9 +115,9 @@ export default function ChargeCard({ duration, formik, selectedCar }) {
                     <td className="py-2">{formik.values.discount}%</td>
                     <td className="py-2 text-right">
                       -$
-                      {parseFloat(
-                        (totalCharges * formik.values.discount) / 100
-                      ).toFixed(2)}
+                      {((totalCharges * formik.values.discount) / 100).toFixed(
+                        2
+                      )}
                     </td>
                   </tr>
                 )}
@@ -126,18 +131,7 @@ export default function ChargeCard({ duration, formik, selectedCar }) {
                 <td className="pt-2">Total</td>
                 <td className="pt-2"></td>
                 <td className="pt-2"></td>
-                <td className="pt-2 text-right">
-                  $
-                  {parseFloat(
-                    totalCharges +
-                      (formik.values.hasDamage ? 9 : 0) +
-                      (formik.values.hasInsurance ? 15 : 0) +
-                      (formik.values.hasTax ? 11.5 : 0) -
-                      (formik.values.discount
-                        ? (totalCharges * formik.values.discount) / 100
-                        : 0)
-                  ).toFixed(2)}
-                </td>
+                <td className="pt-2 text-right">${totalCharges.toFixed(2)}</td>
               </tr>
             </tfoot>
           ) : (
