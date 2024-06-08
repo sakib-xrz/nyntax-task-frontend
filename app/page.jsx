@@ -63,7 +63,7 @@ export default function Home() {
 
   const handlePrintCashReceipt = useReactToPrint({
     content: () => cashReceiptRef.current,
-    documentTitle: `cash_receipt_${selectedReceipt?.invoiceId}`,
+    documentTitle: `cash_receipt`,
   });
 
   const formik = useFormik({

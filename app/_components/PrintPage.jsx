@@ -54,13 +54,13 @@ export const PrintPage = forwardRef(function PrintPage(
           <p>CLAIM:</p>
           <p>
             Date/Time Out:{" "}
-            {selectedReceipt?.pickupDate ||
-              (formik.values.pickupDate && format(start, "Pp"))}
+            {(selectedReceipt?.pickupDate || formik.values.pickupDate) &&
+              format(start, "Pp")}
           </p>
           <p>
             Date/Time In:{" "}
-            {selectedReceipt?.dropoffDate ||
-              (formik.values.returnDate && format(end, "Pp"))}
+            {(selectedReceipt?.dropoffDate || formik.values.returnDate) &&
+              format(end, "Pp")}
           </p>
         </div>
       </div>
